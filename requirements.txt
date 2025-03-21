@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+langchain
+twilio
+boto3
+psycopg2-binary
+sqlalchemy
+python-dotenv
+langchain_community
+langgraph
+pydantic==1.10.8

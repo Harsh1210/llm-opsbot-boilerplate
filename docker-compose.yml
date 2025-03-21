@@ -1,0 +1,69 @@
+version: "3.8"
+services:
+  ops_agent:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.ops_agent  # Using the Ops Agent Dockerfile
+    container_name: ops_agent_container  # Container name for Ops Agent
+    ports:
+      - "8000:8000"  # Map host port 8000 to container port 8000
+    environment:
+      - OPENAI_API_KEY=your_openai_api_key
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=llm_db
+      - WHATSAPP_ACCESS_TOKEN=your_whatsapp_access_token
+      - WHATSAPP_PHONE_NUMBER_ID=your_whatsapp_phone_number_id
+      - META_VERIFY_TOKEN=your_meta_verify_token
+    depends_on:
+      - postgres
+    networks:
+      - ops_network
+    # ----------------------------------------------------------------
+    # To add a new agent container:
+    # 1. Duplicate one of the existing service blocks (e.g., the dummy_agent block).
+    # 2. Change the service key to your new agent's name (e.g., "new_agent").
+    # 3. Update the "container_name" with a unique identifier.
+    # 4. Adjust the "ports" mapping to use a unique host port.
+    # 5. Specify the custom Dockerfile for your new agent (using the "dockerfile" field).
+    # 6. Add any agent-specific environment variables as needed.
+    # 7. Ensure the new service connects to the "ops_network".
+    # ----------------------------------------------------------------
+
+  dummy_agent:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.dummy_agent  # Using the Dummy Agent Dockerfile
+    container_name: dummy_agent_container  # Container name for Dummy Agent
+    ports:
+      - "8001:8000"  # Map host port 8001 to container port 8000
+    environment:
+      - OPENAI_API_KEY=your_openai_api_key
+    depends_on:
+      - postgres
+    networks:
+      - ops_network
+
+  postgres:
+    image: postgres:14
+    container_name: postgres  # Container name for Postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: llm_db
+    ports:
+      - "5432:5432"  # Map host port 5432 to container port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ops_network
+
+volumes:
+  postgres_data:
+  
+networks:
+  ops_network:
+    driver: bridge
